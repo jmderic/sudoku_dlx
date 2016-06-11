@@ -1,0 +1,6 @@
+2008-04-25  Mark Deric  <mark@dericnet.com>
+
+	* added this ChangeLog file in preparation for first release into
+	the ecosystem with the CVS "rel0_01_austin" tag.  Will tar the CVS
+	exported code base to expand into directory jmdlx-0.01.  The
+	shabbiest part of my graduation present to my oldest son :-) .

@@ -1,0 +1,18 @@
+#!/bin/sh
+# $Id: bootstrap,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
+# the list of commands that need to run before we do a compile
+
+REQD_FILES="NEWS README ChangeLog"
+for REQD_FILE in $REQD_FILES; do
+    if test ! -f $REQD_FILE; then
+	touch $REQD_FILE
+    fi
+done
+
+aclocal
+autoheader
+libtoolize --copy --force
+automake --add-missing --copy
+autoconf
+
+# ./configure --enable-maintainer-mode

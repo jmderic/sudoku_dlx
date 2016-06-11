@@ -1,0 +1,89 @@
+$Id: README,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
+
+A Sudoku puzzle solver.
+
+This used Knuth's DLX "Dancing Links" concept for implmenting
+Algorithm X to solve the "exact cover" problem.  The DLX algorithm is
+installed as a shared library; effort was made to separate the Sudoku
+semantics from the library so the library can be re-used.
+
+Also, it's pretty short:
+[mark@laguna07 jmd_dlx]$ find . \( -name "*.cpp" -o -name "*.h" \) -type f | xargs wc -l
+  158 ./lib/jmdlx.cpp
+  169 ./src/sudoku_squares.h
+  139 ./src/sudoku_main.cpp
+  233 ./include/jmdlx.h
+  699 total
+
+to build:
+
+./bootstrap # bootstraps the GNU autotools suite
+./configure --enable-maintainer-mode
+# maintainer-mode is optional (see ./configure --help)
+make -k
+make install # puts in /usr/local unless you ./configure alternatively
+
+to run, enter arguments specifying the known squares of the form
+number_row_column without the underscores where row and column numbers
+are 1 based (vs zero based).  In the exaample below, "715" says a 7 is
+in row 1, column 5.
+
+[mark@laguna07 src]$ ./sudoku_dlx 511 114 715 319 122 526 427 728 334 \
+	342 143 444 846 652 253 857 958 964 766 167 368 976 982 883 \
+	784 588 691 495 196 999
+solution:
+r1c2-8
+r1c3-4
+r1c6-2
+r1c7-9
+r1c8-6
+r2c1-3
+r2c3-9
+r2c4-6
+r2c5-8
+r2c9-2
+r3c1-2
+r3c2-7
+r3c3-6
+r3c5-9
+r3c6-4
+r3c7-5
+r3c8-1
+r3c9-8
+r4c1-9
+r4c5-6
+r4c7-7
+r4c8-2
+r4c9-5
+r5c1-7
+r5c4-5
+r5c5-1
+r5c6-3
+r5c9-4
+r6c1-8
+r6c2-4
+r6c3-5
+r6c5-2
+r6c9-6
+r7c1-1
+r7c2-2
+r7c3-3
+r7c4-8
+r7c5-5
+r7c7-6
+r7c8-4
+r7c9-7
+r8c1-4
+r8c5-3
+r8c6-6
+r8c7-2
+r8c9-1
+r9c2-5
+r9c3-7
+r9c4-2
+r9c7-3
+r9c8-8
+[mark@laguna07 src]$ 
+
+to debug in place w/o installing:
+libtool --mode=execute gdb sudoku_dlx
