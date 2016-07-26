@@ -11,5 +11,5 @@ sudoku_dlx_LDFLAGS = $(all_libraries)
 
 sudoku_dlx_LDADD = ../lib/libjmdlx.la
 
-dnl sudoku_dlx_CXXFLAGS = -DCOLUMN_SETUP_DEBUG=1
-dnl sudoku_dlx_CXXFLAGS = -DROW_SETUP_DEBUG=1
+## sudoku_dlx_CXXFLAGS = -DCOLUMN_SETUP_DEBUG=1
+## sudoku_dlx_CXXFLAGS = -DROW_SETUP_DEBUG=1

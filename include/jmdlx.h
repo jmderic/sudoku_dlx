@@ -3,7 +3,7 @@
  * $Id: jmdlx.h,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
  *
  ***************************************************************************
- *   Copyright (C) 2008 by Mark Deric                                      *
+ *   Copyright (C) 2008, 2016 by Mark Deric                                *
  *   mark@dericnet.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -37,6 +37,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <climits>
 
 JMD_DLX_NAMESPACE_BEGIN
 
