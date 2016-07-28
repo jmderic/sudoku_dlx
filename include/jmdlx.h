@@ -25,10 +25,10 @@
 #ifndef _JMDLX_H
 #define _JMDLX_H 1
 
-#define JMD_NAMESPACE_BEGIN namespace JMD {
+#define JMD_NAMESPACE_BEGIN namespace jmd {
 #define JMD_NAMESPACE_END }
 
-#define JMD_DLX_NAMESPACE_BEGIN JMD_NAMESPACE_BEGIN namespace DLX {
+#define JMD_DLX_NAMESPACE_BEGIN JMD_NAMESPACE_BEGIN namespace dlx {
 #define JMD_DLX_NAMESPACE_END } JMD_NAMESPACE_END
 
 #include <cstddef>  // size_t
@@ -44,7 +44,7 @@ JMD_DLX_NAMESPACE_BEGIN
 class ec_exception : public std::runtime_error
 {
 public:
-    ec_exception(std::string what) : std::runtime_error(what) {}
+    ec_exception(const std::string& what) : std::runtime_error(what) {}
 };
 
 class col_hdr;
@@ -94,21 +94,19 @@ public:
     std::string name;
 };
 
-typedef std::vector<col_hdr> col_hdr_array;
-typedef std::vector<matrix_one*> ones_vec;
-typedef std::vector<std::string> string_vec;
-typedef std::vector<size_t> size_t_vec;
-typedef std::set<matrix_one*> ones_set;
-
 struct row_spec
 {
-    row_spec(size_t* begin, size_t* end, bool constraint_ = false)
-        : constraint(constraint_), col_indices(begin, end) {}
-    row_spec(size_t_vec& stv, bool constraint_ = false)
-        : constraint(constraint_), col_indices(stv) {}
+    row_spec(size_t* begin, size_t* end, bool constraint = false)
+        : constraint(constraint), col_indices(begin, end) {}
+    row_spec(std::vector<size_t>& stv, bool constraint = false)
+        : constraint(constraint), col_indices(stv) {}
     bool constraint;
-    size_t_vec col_indices;
+    std::vector<size_t> col_indices;
 };
+
+typedef std::vector<col_hdr> col_hdr_array;
+typedef std::vector<matrix_one*> ones_vec;
+typedef std::set<matrix_one*> ones_set;
 typedef std::vector<row_spec> all_rows;
 
 class ec_callback
@@ -121,7 +119,9 @@ public:
         quit_searching = false;
         return true;
     }
-    virtual void collect_state(string_vec sv) = 0;
+    //only fn used by subclass solver_callback; others for runtime analysis &
+    //control (see removed creator_callback and reconsider during algo review)
+    virtual void collect_state(std::vector<std::string> sv) = 0;
     virtual void end_depth(size_t k, bool& quit_searching) { }
 };
 
@@ -137,7 +137,7 @@ public:
     }
 
 protected:
-    void prune_constraints() throw(ec_exception);
+    void prune_constraints();
     // helper for prune_constraints()
     void delete_column(matrix_one* col);
 
@@ -182,7 +182,7 @@ protected:
     }
 
     void advertise_state(size_t k) {
-        string_vec sv;
+        std::vector<std::string> sv;
         for (size_t i=0; i<k; ++i) {
             matrix_one* row_one = O_vector[i];
             std::ostringstream os(std::ios::app);

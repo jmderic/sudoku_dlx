@@ -2,7 +2,7 @@
 # $Id: mrproper,v 1.2 2008/04/25 19:56:34 mark Exp $
 # the list of commands that need to run to restore the initial fileset
 
-# make maintainer-clean
+make maintainer-clean
 
 BOOTSTRAPPED_FILES="aclocal.m4 config.sub COPYING INSTALL ltmain.sh missing NEWS config.guess configure depcomp install-sh config.h.in"
 

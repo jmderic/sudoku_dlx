@@ -1,5 +1,7 @@
 $Id: README,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
 
+Copyright (C) 2008, 2016 by Mark Deric
+
 A Sudoku puzzle solver.
 
 This used Knuth's DLX "Dancing Links" concept for implmenting
@@ -20,6 +22,7 @@ to build:
 ./bootstrap # bootstraps the GNU autotools suite
 ./configure --enable-maintainer-mode
 # maintainer-mode is optional (see ./configure --help)
+./bootstrap && ./configure --enable-maintainer-mode
 make -k
 make install # puts in /usr/local unless you ./configure alternatively
 
@@ -87,3 +90,6 @@ r9c8-8
 
 to debug in place w/o installing:
 libtool --mode=execute gdb sudoku_dlx
+
+convenient find exec grep:
+find . -name ".git" -prune -o -type f \( -name "*.cpp" -o -name "*.h" \) -exec grep -E -nH -e "to_find" {} +

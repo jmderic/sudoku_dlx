@@ -3,7 +3,7 @@
  * $Id: sudoku_main.cpp,v 1.2 2008/04/25 19:05:28 mark Exp $
  *
  ***************************************************************************
- *   Copyright (C) 2008 by Mark Deric                                      *
+ *   Copyright (C) 2008, 2016 by Mark Deric                                *
  *   mark@dericnet.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -33,7 +33,7 @@
 
 #include "sudoku_squares.h"
 
-class square_formatter : public std::unary_function<const char&, void>
+class square_formatter
 {
 public:
     square_formatter() : formatted(formatted_l), new_token(true),
@@ -71,7 +71,7 @@ private:
     char* next;
 };
 
-class state_rearranger : public std::unary_function<const std::string&, void>
+class state_rearranger
 {
 public:
     state_rearranger(std::set<std::string>& ordered_output_)
@@ -85,16 +85,15 @@ private:
     std::set<std::string>& ordered_output;
 };
 
-class state_printer : public std::unary_function<const std::string&, void>
+class state_printer
 {
 public:
-    //state_printer() {}
     void operator() (const std::string& sq) {
         std::cout << sq << std::endl;
     }
 };
 
-static void render_state(JMD::DLX::string_vec sv,
+static void render_state(std::vector<std::string> sv,
                          std::string state_description,
                          std::set<std::string>& ordered_output)
 {
@@ -112,7 +111,6 @@ typedef std::multimap<size_t, std::string> frequency_map;
 
 // generally useful ... should be a pair_swap template
 class frequency_transformer
-    : public std::unary_function<counting_pair, frequency_pair>
 {
 public:
     frequency_pair operator() (const counting_pair& cp) {
@@ -123,7 +121,7 @@ public:
     }
 };
 
-class cell_frequency : public std::unary_function<const std::string&, void>
+class cell_frequency
 {
 public:
     cell_frequency(counting_map& cm_) : cm(cm_) {}
@@ -146,11 +144,12 @@ protected:
     counting_map& cm;
 };
 
-class solver_callback : public JMD::DLX::ec_callback
+class solver_callback : public jmd::dlx::ec_callback
 {
 public:
     solver_callback() : cf(cm), solution_count(0) {}
-    virtual void collect_state(JMD::DLX::string_vec sv) {
+    virtual void collect_state(std::vector<std::string> sv) {
+        // std::cout << "_jmd collect_state: " << sv << std::endl;
         std::set<std::string> ordered_output;
         render_state(sv, "solution:", ordered_output);
         for_each(ordered_output.begin(), ordered_output.end(), cf);
@@ -171,91 +170,35 @@ protected:
     size_t solution_count;
 };
 
-class creator_callback : public JMD::DLX::ec_callback
-{
-public:
-    creator_callback() : depth_threshhold(50), result_count(-1) {}
-    virtual bool start_depth(size_t k) {
-        if ( k == depth_threshhold ) {
-            std::cout << "v" << std::flush;
-            result_count = 0;
-            return true; // collect state
-        }
-        return false; // don't collect state
-    }
-    virtual bool have_result(bool& quit_searching) {
-        quit_searching = false;
-        if ( ++result_count == 1 ) {
-            return true; // collect state
-        }
-        quit_searching = true;
-        return false; // don't collect state
-    }
-    virtual void collect_state(JMD::DLX::string_vec sv) {
-        if ( result_count == 0 ) {
-            start = sv;
-        }
-        else { // result_count == 1
-            solution = sv;
-        }
-    }
-    virtual void end_depth(size_t k, bool& quit_searching) {
-        if ( k == depth_threshhold ) {
-            std::cout << "^" << result_count << std::flush;
-            if ( result_count == 1 ) {
-                std::set<std::string> ordered_output;
-                render_state(start, "start:", ordered_output);
-                ordered_output.clear();
-                render_state(solution, "solution:", ordered_output);
-                quit_searching = true;
-            }
-            else {
-                quit_searching = false;
-                // continue the search at the level above
-                result_count = -1;
-            }
-        }
-        // don't change quit_searching
-    }
-
-protected:
-    size_t depth_threshhold;
-    int result_count;
-    JMD::DLX::string_vec start, solution;
-};
-
-
 int main(int argc, char *argv[])
 {
     try {
-        JMD::DLX::square_set taken;
-        std::pair<JMD::DLX::square_set::iterator, bool> inserted;
+        square_set taken;
+        std::pair<square_set::iterator, bool> inserted;
 
-        //std::cout << argc << std::endl;
         for (int i=1; i<argc; ++i ) {
-            JMD::DLX::sudoku_square sq(argv[i]);
+            sudoku_square sq(argv[i]);
             inserted = taken.insert(sq);
             if (!inserted.second) {
                 std::ostringstream os("Duplicate squares specified: ",
                                       std::ios::app);
                 os << argv[i];
-                JMD::DLX::ec_exception exc(os.str());
+                jmd::dlx::ec_exception exc(os.str());
                 throw exc;
             }            
         }
 
-        JMD::DLX::sudoku_squares sqs(taken);
-        JMD::DLX::col_hdr_array cha = sqs.create_columns();
-        JMD::DLX::all_rows rows = sqs.create_rows();
+        sudoku_squares sqs(taken);
+        jmd::dlx::col_hdr_array cha = sqs.create_columns();
+        jmd::dlx::all_rows rows = sqs.create_rows();
         solver_callback scb;
-        //creator_callback scb;
 
-        JMD::DLX::ec_matrix ecm(cha, rows, scb);
+        jmd::dlx::ec_matrix ecm(cha, rows, scb);
         ecm.search();
         scb.dump_frequency();
     }
-    catch(JMD::DLX::ec_exception& ec) {
-        std::cerr << "Exitting on exception " << ec.what() << std::endl;
+    catch(jmd::dlx::ec_exception& ec) {
+        std::cerr << "Exiting on exception " << ec.what() << std::endl;
     }
 
     return EXIT_SUCCESS;
