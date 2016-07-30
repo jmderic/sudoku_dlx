@@ -26,6 +26,7 @@
 #define _SUDOKU_SQUARES_H 1
 
 #include "jmdlx.h"
+#include <sstream>
 
 #if defined(COLUMN_SETUP_DEBUG) || defined(ROW_SETUP_DEBUG)
 #include <iostream>
@@ -58,11 +59,11 @@ public:
         }
     }
 
-    std::vector<size_t> get_ec_columns() {
+    std::vector<intz_t> get_ec_columns() {
         // ec_column indices are zero based (even though their names are 1
         // based)
-        std::vector<size_t> stv;
-        size_t idx;
+        std::vector<intz_t> stv; // std::move return value?
+        intz_t idx;
         char sub = (((row_-1)/SUB_SIDES)*SUB_SIDES)+((col_-1)/SUB_SIDES)+1;
         idx = (0*SIDE_COUNT*SIDE_COUNT) + (num_-1)*SIDE_COUNT+(row_-1);
         stv.push_back(idx);
@@ -90,29 +91,16 @@ private:
     char row_;
     char col_;
     char num_;
-#ifdef ROW_SETUP_DEBUG
     friend std::ostream& operator<<(std::ostream& os, const sudoku_square& ssq);
-#endif
 };
 
-#ifdef ROW_SETUP_DEBUG
 inline std::ostream& operator<<(std::ostream& os, const sudoku_square& ssq) {
     os << 'r' << (int) ssq.row_ << 'c' << (int) ssq.col_ << '-'
         << (int) ssq.num_;
     return os;
 }
-#ifdef JMD_HIDE
-inline std::ostream& operator<<(std::ostream& os,
-                                const std::vector<size_t>& stv) {
-    std::vector<size_t>::const_iterator it, endit=stv.end();
-    for (it=stv.begin(); it != endit; ++it)
-        os << *it << ((it+1!=endit)?", ":"");
-    return os;
-}
-#endif //JMD_HIDE
-#endif
 
-// put in a more general place? template for vector of any insertable type
+// put in a more general place? vector of any insertable type
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::vector<T>& stv) {
@@ -125,19 +113,60 @@ inline std::ostream& operator<<(std::ostream& os,
 typedef std::set<sudoku_square> square_set;
 
 // all the choices of squares are rows on the ec_matrix; this sets up the rows
-// and columns
-class sudoku_squares
+// and columns for the ec library and supports interpretation of the ec engine
+// results as applied to the sudoku game
+class sudoku_game
 {
 public:
-    sudoku_squares(const square_set& squares_taken)
-        : squares_taken_(squares_taken) {}
-    jmd::dlx::col_hdr_array create_columns() {
-        static const char criteria[] = { 'r', 'c', 's', 'n' };
-        jmd::dlx::col_hdr_array cha;
+    sudoku_game(const square_set& squares_taken)
+            : squares_taken_(squares_taken) {
+        create_columns();
+    }
 
-        for (size_t i=0; i < sizeof(criteria)/sizeof(criteria[0]); ++i) {
-            for (size_t j=1; j <= SIDE_COUNT; ++j) {
-                for (size_t k=1; k <= SIDE_COUNT; ++k) {
+    intz_t get_col_count() const { return col_names_.size(); }
+
+    // candidate for std::move return value?
+    jmd::dlx::all_rows create_rows() {
+        jmd::dlx::all_rows rows;
+        square_set::const_iterator endit=squares_taken_.end();
+#ifdef ROW_SETUP_DEBUG
+        square_set::const_iterator it;
+        for(it = squares_taken_.begin(); it != endit; ++it)
+            std::cout << "squares_taken_: " << *it << std::endl;
+#endif
+
+        for (intz_t i=1; i <= SIDE_COUNT; ++i) {
+            for (intz_t j=1; j <= SIDE_COUNT; ++j) {
+                for (intz_t k=1; k <= SIDE_COUNT; ++k) {
+                    sudoku_square sq(i, j, k);
+                    std::vector<intz_t> stv = sq.get_ec_columns();
+                    square_set::const_iterator it = squares_taken_.find(sq);
+                    jmd::dlx::row_spec rs(stv, it != endit);
+#ifdef ROW_SETUP_DEBUG
+                    std::cout << sq << " " << stv << ((it != endit) ? "*" : "")
+                        << std::endl;
+#endif
+                    rows.push_back(rs);
+                    row_squares_.push_back(sq);
+                }
+            }
+        }
+        return rows;
+    }
+
+    const sudoku_square& get_square_array(intz_t row_idx) const {
+        return row_squares_[row_idx];
+    }
+
+protected:
+    void create_columns() {
+        // 'r' criteria for 1 in row 1 to 9 in row 9; 'c' and 's' like 'r' but
+        // for columns and sub-squares; 'n' for grid coverage, r1c1 to r9c9
+        static const char criteria[] = { 'r', 'c', 's', 'n' };
+        intz_t criteria_count = sizeof(criteria)/sizeof(criteria[0]);
+        for (intz_t i=0; i < criteria_count; ++i) {
+            for (intz_t j=1; j <= SIDE_COUNT; ++j) {
+                for (intz_t k=1; k <= SIDE_COUNT; ++k) {
                     std::ostringstream os(std::ios::app);
                     if ( criteria[i] != 'n' ) {
                         os << j << criteria[i] << k;
@@ -148,43 +177,15 @@ public:
 #ifdef COLUMN_SETUP_DEBUG
                     std::cout << os.str() << std::endl;
 #endif
-                    jmd::dlx::col_hdr ch(os.str());
-                    cha.push_back(ch);
+                    col_names_.push_back(os.str());
                 }
             }
         }
-        return cha;
     }
 
-    jmd::dlx::all_rows create_rows() {
-        jmd::dlx::all_rows rows;
-        square_set::const_iterator endit=squares_taken_.end();
-#ifdef ROW_SETUP_DEBUG
-        square_set::const_iterator it;
-        for(it = squares_taken_.begin(); it != endit; ++it)
-            std::cout << "squares_taken_: " << *it << std::endl;
-#endif
-
-        for (size_t i=1; i <= SIDE_COUNT; ++i) {
-            for (size_t j=1; j <= SIDE_COUNT; ++j) {
-                for (size_t k=1; k <= SIDE_COUNT; ++k) {
-                    sudoku_square sq(i, j, k);
-                    std::vector<size_t> stv = sq.get_ec_columns();
-                    square_set::const_iterator it = squares_taken_.find(sq);
-                    jmd::dlx::row_spec rs(stv, it != endit);
-#ifdef ROW_SETUP_DEBUG
-                    std::cout << sq << " " << stv << ((it != endit) ? "*" : "")
-                        << std::endl;
-#endif
-                    rows.push_back(rs);
-                }
-            }
-        }
-        return rows;
-    }
-
-protected:
     const square_set squares_taken_;
+    std::vector<std::string> col_names_;
+    std::vector<sudoku_square> row_squares_;
 };
 
 #endif // not defined _SUDOKU_SQUARES_H

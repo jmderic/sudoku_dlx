@@ -22,9 +22,13 @@ to build:
 ./bootstrap # bootstraps the GNU autotools suite
 ./configure --enable-maintainer-mode
 # maintainer-mode is optional (see ./configure --help)
-./bootstrap && ./configure --enable-maintainer-mode
+# combined form:
+./bootstrap && ./configure --enable-maintainer-mode CXXFLAGS='-Wall -Wextra -O2 -g'
+# CXXFLAGS note: -O2 does not seem to come through to the build log; it shows -O0
 make -k
 make install # puts in /usr/local unless you ./configure alternatively
+# to clean up all the way
+./mrproper
 
 to run, enter arguments specifying the known squares of the form
 number_row_column without the underscores where row and column numbers

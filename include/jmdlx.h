@@ -31,13 +31,19 @@
 #define JMD_DLX_NAMESPACE_BEGIN JMD_NAMESPACE_BEGIN namespace dlx {
 #define JMD_DLX_NAMESPACE_END } JMD_NAMESPACE_END
 
-#include <cstddef>  // size_t
 #include <string>
 #include <vector>
 #include <set>
-#include <sstream>
+#include <list>
+
 #include <stdexcept>
-#include <climits>
+#include <climits> // LONG_MAX
+
+// Settled on these for the exact cover matrix's row and column indices.
+// Considered size_t, ssize_t, ptrdiff_t and <boost/cstdint.hpp>.  Go with
+// signed everywhere.
+typedef long int intz_t;
+#define INTZ_MAX LONG_MAX
 
 JMD_DLX_NAMESPACE_BEGIN
 
@@ -47,16 +53,16 @@ public:
     ec_exception(const std::string& what) : std::runtime_error(what) {}
 };
 
-class col_hdr;
-
+// represents a 1 in a matrix row -- hdr_ptr points to the column header and
+// rc_idx is the row number
+// alternatively, represents a column header -- hdr_ptr is NULL and rc_idx is
+// the column number
 class matrix_one
 {
-public:
-    matrix_one()
-        : left(this), right(this), up(this), down(this), col(NULL) {}
-    matrix_one(const matrix_one& src)
-        : left(this), right(this), up(this), down(this), col(NULL) {}
-    matrix_one(col_hdr* col_, matrix_one* prev);
+    matrix_one() : left(this), right(this), up(this), down(this),
+                   hdr_ptr(this), rc_idx(-1) {}
+    // inserting constructor: creates and inserts at the specified location
+    matrix_one(intz_t rc_idx, matrix_one* hdr_ptr, matrix_one* prev);
 
     void column_unlink() {
         right->left = left;
@@ -77,59 +83,46 @@ public:
     matrix_one* right;
     matrix_one* up;
     matrix_one* down;
-    col_hdr* col;
+    matrix_one* hdr_ptr;
+    intz_t rc_idx;
+
+    friend class ec_matrix;
 };
 
-class col_hdr : public matrix_one
+struct col_spec
 {
-public:
-    col_hdr(std::string name_) : size(0), name(name_) {}
-    void append(col_hdr* prev) {
-        left = prev;
-        right = prev->right;
-        right->left = left->right = this;
-    }
-
-    size_t size;
-    std::string name;
+    col_spec() : size(0), hdr_ptr(NULL) {}
+    intz_t size;
+    matrix_one* hdr_ptr;
 };
 
 struct row_spec
 {
-    row_spec(size_t* begin, size_t* end, bool constraint = false)
-        : constraint(constraint), col_indices(begin, end) {}
-    row_spec(std::vector<size_t>& stv, bool constraint = false)
+    row_spec(std::vector<intz_t>& stv, bool constraint = false)
         : constraint(constraint), col_indices(stv) {}
     bool constraint;
-    std::vector<size_t> col_indices;
+    std::vector<intz_t> col_indices;
 };
 
-typedef std::vector<col_hdr> col_hdr_array;
-typedef std::vector<matrix_one*> ones_vec;
 typedef std::set<matrix_one*> ones_set;
 typedef std::vector<row_spec> all_rows;
 
+// callbacks to control the exact cover engine and get solutions from it
 class ec_callback
 {
 public:
-    // bool return values for start_depth() and have_result() are true if the
-    // consumer wants the harvest the state via a call to collect_state()
-    virtual bool start_depth(size_t k) { return false; }
-    virtual bool have_result(bool& quit_searching) {
-        quit_searching = false;
+    // returns true if the consumer wants to harvest the answer via a call to
+    // get_search_path(); quit_searching exits search giving no more answers
+    virtual bool harvest_result(bool& /*quit_searching*/) {
         return true;
     }
-    //only fn used by subclass solver_callback; others for runtime analysis &
-    //control (see removed creator_callback and reconsider during algo review)
-    virtual void collect_state(std::vector<std::string> sv) = 0;
-    virtual void end_depth(size_t k, bool& quit_searching) { }
+    virtual void get_search_path(const std::vector<intz_t>& row_list) = 0;
 };
 
 class ec_matrix
 {
 public:
-    ec_matrix(col_hdr_array& cha, all_rows& rows, ec_callback& eccb_)
-        throw(ec_exception);
+    ec_matrix(intz_t col_count, const all_rows& rows, ec_callback& eccb_);
     ~ec_matrix();
 
     void search() {
@@ -140,106 +133,88 @@ protected:
     void prune_constraints();
     // helper for prune_constraints()
     void delete_column(matrix_one* col);
+    void cleanup();
 
-    col_hdr* best_column() {
-        size_t min_ones = UINT_MAX;
-        col_hdr* best = NULL;
+    matrix_one* best_column() {
+        intz_t min_ones = INTZ_MAX;
+        matrix_one* best = NULL;
 
-        // use reinterpret_cast as the cheapest re-cast 'cause we know we're
-        // right ?? Is there better??
-        for (col_hdr* col = reinterpret_cast<col_hdr*>(root->right);
-             col != root; col = reinterpret_cast<col_hdr*>(col->right)) {
-            if ( col->size < min_ones ) {
-                min_ones = col->size;
+        for (matrix_one* col=root_.right; col != &root_; col=col->right) {
+            if ( col_specs_[col->rc_idx].size < min_ones ) {
+                min_ones = col_specs_[col->rc_idx].size;
                 best = col;
             }
         }
         return best;
     }
 
-    void cover_column(col_hdr* col) {
+    void cover_column(matrix_one* col) {
         col->column_unlink();
         for (matrix_one* column_one = col->down; column_one != col;
              column_one = column_one->down) {
             for (matrix_one* row_one = column_one->right; row_one != column_one;
                  row_one = row_one->right) {
                 row_one->row_unlink();
-                --row_one->col->size;
+                --col_specs_[row_one->hdr_ptr->rc_idx].size;
             }
         }
     }
 
-    void uncover_column(col_hdr* col) {
+    void uncover_column(matrix_one* col) {
         for (matrix_one* column_one = col->up; column_one != col;
              column_one = column_one->up) {
             for (matrix_one* row_one = column_one->left; row_one != column_one;
                  row_one = row_one->left) {
-                ++row_one->col->size;
+                ++col_specs_[row_one->hdr_ptr->rc_idx].size;
                 row_one->row_relink();
             }
         }
         col->column_relink();
     }
 
-    void advertise_state(size_t k) {
-        std::vector<std::string> sv;
-        for (size_t i=0; i<k; ++i) {
-            matrix_one* row_one = O_vector[i];
-            std::ostringstream os(std::ios::app);
-            do {
-                os << row_one->col->name;
-                if ( (row_one = row_one->right) != O_vector[i] ) {
-                    os << " ";
-                }
-                else {
-                    sv.push_back(os.str());
-                    break;
-                }
-            } while (true);
-        }
-        eccb.collect_state(sv);
+    void advertise_search_path(intz_t k) {
+        std::vector<intz_t>::const_iterator it = search_path_.begin();
+        std::vector<intz_t> row_list(it, it+k);
+        eccb_.get_search_path(row_list);
     }
 
-    bool search(size_t k) {
-        bool quit_searching = false;
-        if (root->right == root) {
-            if ( eccb.have_result(quit_searching) ) {
-                advertise_state(k);
+    void search(std::vector<intz_t>::size_type k) {
+        if (root_.right == &root_) {
+            // no columns left uncovered; this is a solution
+            if ( eccb_.harvest_result(quit_searching_) ) {
+                advertise_search_path(k);
             }
         }
         else {
-            if ( eccb.start_depth(k) ) {
-                advertise_state(k);
-            }
-            col_hdr* col = best_column();
-            cover_column(col);
-            for (matrix_one* column_one = col->down;
-                 column_one != col && !quit_searching;
-                 column_one = column_one->down) {
-                if (O_vector.size()<k+1)
-                    O_vector.resize(k+1);
-                O_vector[k] = column_one;
-                for (matrix_one* row_one = column_one->right; row_one != column_one;
-                     row_one = row_one->right) {
-                    cover_column(row_one->col);
+            matrix_one* best_hdr = best_column();
+            cover_column(best_hdr);
+            for (matrix_one* trial_row = best_hdr->down;
+                 trial_row != best_hdr && !quit_searching_;
+                 trial_row = trial_row->down) {
+                if (search_path_.size()<k+1)
+                    search_path_.resize(k+1);
+                search_path_[k] = trial_row->rc_idx;
+                for (matrix_one* tr_col = trial_row->right; tr_col != trial_row;
+                     tr_col = tr_col->right) {
+                    cover_column(tr_col->hdr_ptr);
                 }
-                quit_searching = search(k+1);
-                for (matrix_one* row_one = column_one->left; row_one != column_one;
-                     row_one = row_one->left) {
-                    uncover_column(row_one->col);
+                search(k+1);
+                for (matrix_one* tr_col = trial_row->left; tr_col != trial_row;
+                     tr_col = tr_col->left) {
+                    uncover_column(tr_col->hdr_ptr);
                 }
             }
-            uncover_column(col);
-            eccb.end_depth(k, quit_searching);
+            uncover_column(best_hdr);
         }
-        return quit_searching;
     }
 
-    col_hdr root_lvalue;
-    col_hdr* root;
-    ones_vec O_vector;
-    ec_callback& eccb;
-    ones_vec constraints;
+    matrix_one root_;
+    bool quit_searching_;
+    std::vector<col_spec> col_specs_;
+    std::vector<intz_t> search_path_;
+    ones_set constraint_hdrs_;
+    std::list<matrix_one*> heap_ones_;
+    ec_callback& eccb_;
 };
 
 

@@ -23,6 +23,8 @@
  ***************************************************************************/
 
 #include "jmdlx.h"
+#include <sstream>
+
 
 #ifdef SETUP_DEBUG
 #include <iostream>
@@ -30,131 +32,75 @@
 
 JMD_DLX_NAMESPACE_BEGIN
 
-
-matrix_one::matrix_one(col_hdr* col_, matrix_one* prev)
+matrix_one::matrix_one(intz_t rc_idx, matrix_one* hdr_ptr, matrix_one* prev)
     : left(prev ? prev : this), right(prev ? prev->right : this),
-      up(col_->up), down(col_), col(col_)
+      up(hdr_ptr?hdr_ptr->up:this), down(hdr_ptr?hdr_ptr:this),
+      hdr_ptr(hdr_ptr), rc_idx(rc_idx)
 {
     up->down = down->up = right->left = left->right = this;
 }
 
-void ec_matrix::delete_column(matrix_one* col)
-{
-    // very similar to cover_column() but this guy does deleting and we didn't
-    // want to slow down cover_column() (e.g., with a flag) for considerations
-    // that only occur during startup
-    matrix_one* next;
-    col->column_unlink();
-    for (matrix_one* column_one = col->down; column_one != col;
-         column_one = next) {
-        for (matrix_one* row_one = column_one->right; row_one != column_one;
-             row_one = next) {
-            row_one->row_unlink();
-            --row_one->col->size;
-            next = row_one->right;
-            delete row_one;
-        }
-        next = column_one->down;
-        delete column_one;
-    }
-}
-
 void ec_matrix::prune_constraints()
 {
-    ones_set delete_columns;
-
-    try {
-        std::pair<ones_set::iterator, bool> inserted;
-        ones_vec::iterator it, endit = constraints.end();
-        col_hdr* overconstrained = NULL;
-        for (it = constraints.begin(); it != endit; ++it) {
-            matrix_one* row_one = *it;
-            inserted = delete_columns.insert(row_one->col);
-            if (!inserted.second) {
-                overconstrained = reinterpret_cast<col_hdr*>(*inserted.first);
-                throw overconstrained;
-            }
-            for (matrix_one* row_next = row_one->right; row_one != row_next;
-                 row_next = row_next->right) {
-                inserted = delete_columns.insert(row_next->col);
-                if (!inserted.second) {
-                    overconstrained =
-                        reinterpret_cast<col_hdr*>(*inserted.first);
-                    throw overconstrained;
-                }
-            }
-        }
-    }
-    catch(col_hdr* overconstrained) {
-        std::ostringstream os("Overconstrained on column ", std::ios::app);
-        os << overconstrained->name;
-        ec_exception exc(os.str());
-        throw exc;
-    }
-
-    ones_set::iterator it, endit = delete_columns.end();
-    for (it = delete_columns.begin(); it != endit; ++it) {
-        delete_column(*it);
-    }
-
-}
-
-static void cleanup(col_hdr* proot)
-{
-    matrix_one* next_col, *next_elt;
-
-    for (next_col = proot->right; next_col != proot;
-         next_col = next_col->right) {
-        for (next_elt = next_col->down; next_elt != next_col; ) {
-            matrix_one* elt = next_elt;
-            next_elt = next_elt->down;
-#ifdef SETUP_DEBUG
-            std::cout << elt << std::endl;
-#endif
-            delete elt;
-        }
+    ones_set::iterator it, endit=constraint_hdrs_.end();
+    for (it=constraint_hdrs_.begin(); it!=endit; ++it) {
+        cover_column(*it);
     }
 }
 
-ec_matrix::ec_matrix(col_hdr_array& cha, all_rows& rows, ec_callback& eccb_)
-    throw(ec_exception)
-    : root_lvalue("<root>"), root(&root_lvalue), eccb(eccb_)
+void ec_matrix::cleanup()
 {
-    col_hdr* prev = root;
-    col_hdr_array::iterator it, endit = cha.end();
-    for (it = cha.begin(); it != endit; ++it) {
-        it->append(prev);
-        prev = &*it;
+    std::list<matrix_one*>::const_iterator it, endit=heap_ones_.end();
+    for (it=heap_ones_.begin(); it!=endit; ++it)
+        delete *it;
+}
+
+ec_matrix::ec_matrix(intz_t col_count, const all_rows& rows, ec_callback& eccb)
+        : quit_searching_(false), col_specs_(col_count), eccb_(eccb)
+{
+    intz_t i;
+    matrix_one* prev = &root_;
+    for (i= 0; i<col_count; ++i) {
+        matrix_one* next = new matrix_one(i, NULL, prev);
+        heap_ones_.push_back(next);
+        col_specs_[i].hdr_ptr = next;
+        prev = next;
     }
 
-    size_t i, row_count = rows.size();
+    intz_t row_count = rows.size();
     for (i = 0; i<row_count; ++i) {
-        size_t j, row_elements = rows[i].col_indices.size();
+        intz_t j, row_elements = rows[i].col_indices.size();
+        bool constraint = rows[i].constraint;
         matrix_one* prev = NULL;
         for (j = 0; j<row_elements; ++j) {
-            size_t column_idx = rows[i].col_indices[j];
-            prev = new matrix_one(&cha[column_idx], prev);
-            if ( !j && rows[i].constraint) {
-                constraints.push_back(prev);
+            intz_t col_idx = rows[i].col_indices[j];
+            prev = new matrix_one(i, col_specs_[col_idx].hdr_ptr, prev);
+            heap_ones_.push_back(prev);
+            if (constraint) {
+                std::pair<ones_set::iterator, bool> inserted =
+                    constraint_hdrs_.insert(prev->hdr_ptr);
+                if (!inserted.second) {
+                    std::ostringstream os;
+                    os << "Overconstrained on column " << col_idx;
+                    ec_exception exc(os.str());
+                    throw exc;
+                }
             }
-            ++prev->col->size;
-#ifdef SETUP_DEBUG
-            std::cout << prev << std::endl;
-#endif
+            ++col_specs_[col_idx].size;
         }
     }
     try {
         prune_constraints();
     }
     catch(ec_exception& ec) {
-        cleanup(root);
+        cleanup();
         throw ec;
     }
 }
 
 ec_matrix::~ec_matrix()
 {
-    cleanup(root);
+    cleanup();
 }
 
 JMD_DLX_NAMESPACE_END
