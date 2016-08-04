@@ -1,6 +1,5 @@
 #!/bin/sh -e
-# $Id: bootstrap,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
-# the list of commands that need to run before we do a compile
+# the list of commands that need to run before we do ./configure
 
 LIBTOOLIZE=no_libtoolize
 case `uname` in
@@ -10,17 +9,16 @@ case `uname` in
 	LIBTOOLIZE=libtoolize  ;;
 esac
 
-REQD_FILES="NEWS README ChangeLog"
-for REQD_FILE in $REQD_FILES; do
-    if test ! -f $REQD_FILE; then
-	touch $REQD_FILE
-    fi
-done
-
 aclocal
 autoheader
 $LIBTOOLIZE --copy --force
 automake --add-missing --copy
 autoconf
+
+USER_DIST=${1:-no_dist}
+if test $USER_DIST == dist; then
+    echo "Doing cleanup for ./configure distribution"
+    rm -rf autom4te.cache
+fi
 
 # next: ./configure --enable-maintainer-mode

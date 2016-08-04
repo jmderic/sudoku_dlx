@@ -1,34 +1,15 @@
-/* -*- Mode: C++; fill-column: 80 -*- 
- *
- * $Id: jmdlx.cpp,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
- *
- ***************************************************************************
- *   Copyright (C) 2008, 2016 by Mark Deric                                *
+/* -*- Mode: C++; fill-column: 80 -*- */
+/***************************************************************************
+ *   Copyright (c) 2008, 2016 Mark Deric                                   *
  *   mark@dericnet.com                                                     *
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ * This work is offered under the the terms of the MIT License; see the    *
+ * LICENSE file in the top directory of this distribution or on Github:    *
+ *   https://github.com/jmderic/sudoku_dlx                                 *
  ***************************************************************************/
 
 #include "jmdlx.h"
 #include <sstream>
-
-
-#ifdef SETUP_DEBUG
-#include <iostream>
-#endif
 
 JMD_DLX_NAMESPACE_BEGIN
 
@@ -68,22 +49,25 @@ ec_matrix::ec_matrix(intz_t col_count, const all_rows& rows, ec_callback& eccb)
     }
 
     intz_t row_count = rows.size();
-    for (i = 0; i<row_count; ++i) {
-        intz_t j, row_elements = rows[i].col_indices.size();
-        bool constraint = rows[i].constraint;
+    for (i = 0; i<row_count; ++i) { // for each row in all_rows
+        const row_spec& row = rows[i];
+        bool constraint = row.constraint;
         matrix_one* prev = NULL;
-        for (j = 0; j<row_elements; ++j) {
-            intz_t col_idx = rows[i].col_indices[j];
+        std::list<intz_t>::const_iterator it, endit=row.col_indices.end();
+        for (it=row.col_indices.begin(); it!=endit; ++it) {
+            // for each column index in which there is a 1 in this row
+            intz_t col_idx = *it;
             prev = new matrix_one(i, col_specs_[col_idx].hdr_ptr, prev);
             heap_ones_.push_back(prev);
             if (constraint) {
                 std::pair<ones_set::iterator, bool> inserted =
                     constraint_hdrs_.insert(prev->hdr_ptr);
                 if (!inserted.second) {
+                    // sudoku's not one, but is there a use case where this is
+                    // not an error?
                     std::ostringstream os;
                     os << "Overconstrained on column " << col_idx;
-                    ec_exception exc(os.str());
-                    throw exc;
+                    throw std::runtime_error(os.str());
                 }
             }
             ++col_specs_[col_idx].size;
@@ -92,9 +76,9 @@ ec_matrix::ec_matrix(intz_t col_count, const all_rows& rows, ec_callback& eccb)
     try {
         prune_constraints();
     }
-    catch(ec_exception& ec) {
+    catch(std::exception& e) {
         cleanup();
-        throw ec;
+        throw e;
     }
 }
 

@@ -1,35 +1,17 @@
-/* -*- Mode: C++; fill-column: 80 -*- 
- *
- * $Id: jmdlx.h,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
- *
- ***************************************************************************
- *   Copyright (C) 2008, 2016 by Mark Deric                                *
+/* -*- Mode: C++; fill-column: 80 -*- */
+/***************************************************************************
+ *   Copyright (c) 2008, 2016 Mark Deric                                   *
  *   mark@dericnet.com                                                     *
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ * This work is offered under the the terms of the MIT License; see the    *
+ * LICENSE file in the top directory of this distribution or on Github:    *
+ *   https://github.com/jmderic/sudoku_dlx                                 *
  ***************************************************************************/
-
 #ifndef _JMDLX_H
 #define _JMDLX_H 1
 
-#define JMD_NAMESPACE_BEGIN namespace jmd {
-#define JMD_NAMESPACE_END }
-
-#define JMD_DLX_NAMESPACE_BEGIN JMD_NAMESPACE_BEGIN namespace dlx {
-#define JMD_DLX_NAMESPACE_END } JMD_NAMESPACE_END
+#define JMD_DLX_NAMESPACE_BEGIN namespace jmd { namespace dlx {
+#define JMD_DLX_NAMESPACE_END }}
 
 #include <string>
 #include <vector>
@@ -46,12 +28,6 @@ typedef long int intz_t;
 #define INTZ_MAX LONG_MAX
 
 JMD_DLX_NAMESPACE_BEGIN
-
-class ec_exception : public std::runtime_error
-{
-public:
-    ec_exception(const std::string& what) : std::runtime_error(what) {}
-};
 
 // represents a 1 in a matrix row -- hdr_ptr points to the column header and
 // rc_idx is the row number
@@ -98,10 +74,10 @@ struct col_spec
 
 struct row_spec
 {
-    row_spec(std::vector<intz_t>& stv, bool constraint = false)
-        : constraint(constraint), col_indices(stv) {}
+    row_spec(std::list<intz_t>& cols, bool constraint = false)
+        : constraint(constraint), col_indices(cols) {}
     bool constraint;
-    std::vector<intz_t> col_indices;
+    std::list<intz_t> col_indices; // for columns with 1's
 };
 
 typedef std::set<matrix_one*> ones_set;
@@ -131,8 +107,6 @@ public:
 
 protected:
     void prune_constraints();
-    // helper for prune_constraints()
-    void delete_column(matrix_one* col);
     void cleanup();
 
     matrix_one* best_column() {

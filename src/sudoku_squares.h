@@ -1,27 +1,12 @@
-/* -*- Mode: C++; fill-column: 80 -*- 
- *
- * $Id: sudoku_squares.h,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
- *
- ***************************************************************************
- *   Copyright (C) 2008, 2016 by Mark Deric                                *
+/* -*- Mode: C++; fill-column: 80 -*- */
+/***************************************************************************
+ *   Copyright (c) 2008, 2016 Mark Deric                                   *
  *   mark@dericnet.com                                                     *
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ * This work is offered under the the terms of the MIT License; see the    *
+ * LICENSE file in the top directory of this distribution or on Github:    *
+ *   https://github.com/jmderic/sudoku_dlx                                 *
  ***************************************************************************/
-
 #ifndef _SUDOKU_SQUARES_H
 #define _SUDOKU_SQUARES_H 1
 
@@ -55,25 +40,25 @@ public:
                && (0 < col_ && col_ <= SIDE_COUNT)) ) {
             std::ostringstream os("Invalid square specifier \"", std::ios::app);
             os << str_spec << "\"";
-            throw jmd::dlx::ec_exception(os.str());
+            throw std::runtime_error(os.str());
         }
     }
 
-    std::vector<intz_t> get_ec_columns() {
+    std::list<intz_t> get_ec_columns() {
         // ec_column indices are zero based (even though their names are 1
         // based)
-        std::vector<intz_t> stv; // std::move return value?
+        std::list<intz_t> one_cols; // std::move return value?
         intz_t idx;
         char sub = (((row_-1)/SUB_SIDES)*SUB_SIDES)+((col_-1)/SUB_SIDES)+1;
         idx = (0*SIDE_COUNT*SIDE_COUNT) + (num_-1)*SIDE_COUNT+(row_-1);
-        stv.push_back(idx);
+        one_cols.push_back(idx);
         idx = (1*SIDE_COUNT*SIDE_COUNT) + (num_-1)*SIDE_COUNT+(col_-1);
-        stv.push_back(idx);
+        one_cols.push_back(idx);
         idx = (2*SIDE_COUNT*SIDE_COUNT) + (num_-1)*SIDE_COUNT+(sub-1);
-        stv.push_back(idx);
+        one_cols.push_back(idx);
         idx = (3*SIDE_COUNT*SIDE_COUNT) + (row_-1)*SIDE_COUNT+(col_-1);
-        stv.push_back(idx);
-        return stv;
+        one_cols.push_back(idx);
+        return one_cols;
     }
 
     bool operator<(const sudoku_square& rhs) const {
@@ -139,12 +124,12 @@ public:
             for (intz_t j=1; j <= SIDE_COUNT; ++j) {
                 for (intz_t k=1; k <= SIDE_COUNT; ++k) {
                     sudoku_square sq(i, j, k);
-                    std::vector<intz_t> stv = sq.get_ec_columns();
+                    std::list<intz_t> one_cols = sq.get_ec_columns();
                     square_set::const_iterator it = squares_taken_.find(sq);
-                    jmd::dlx::row_spec rs(stv, it != endit);
+                    jmd::dlx::row_spec rs(one_cols, it != endit);
 #ifdef ROW_SETUP_DEBUG
-                    std::cout << sq << " " << stv << ((it != endit) ? "*" : "")
-                        << std::endl;
+                    std::cout << sq << " " << one_cols
+                        << ((it != endit) ? "*" : "") << std::endl;
 #endif
                     rows.push_back(rs);
                     row_squares_.push_back(sq);

@@ -1,23 +1,21 @@
 #!/bin/sh
-# $Id: mrproper,v 1.2 2008/04/25 19:56:34 mark Exp $
-# the list of commands that need to run to restore the initial fileset
+# the list of commands that need to run to restore the files to the
+# state before ./bootstrap is run
 
-make maintainer-clean
+# suppress error message if user has not yet typed ./configure
+make maintainer-clean 2>/dev/null
 
-BOOTSTRAPPED_FILES="aclocal.m4 config.sub COPYING INSTALL ltmain.sh missing NEWS config.guess configure depcomp install-sh config.h.in"
-
+BOOTSTRAPPED_FILES="aclocal.m4 config.sub COPYING ltmain.sh missing config.guess configure depcomp install-sh config.h.in autom4te.cache"
 for BOOTSTRAPPED_FILE in $BOOTSTRAPPED_FILES; do
     rm -rf $BOOTSTRAPPED_FILE
 done
 
 MAKEFILE_INS=`find . -type f -name "Makefile.in" -print`
-
 for MAKEFILE_IN in $MAKEFILE_INS; do
     rm -f $MAKEFILE_IN
 done
 
 BACKUPS=`find . -type f -name "*~" -print`
-
 for BACKUP in $BACKUPS; do
     rm -f $BACKUP
 done

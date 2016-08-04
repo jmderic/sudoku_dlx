@@ -7,7 +7,7 @@ AC_PREREQ(2.59)
 AC_INIT(jmd_dlx, 0.1)dnl optional 3rd arg: BUG-REPORT-ADDRESS
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 AC_REVISION($Revision: 1.1 $)dnl
 AM_MAINTAINER_MODE
 
@@ -35,7 +35,9 @@ AC_TYPE_SIZE_T
 # ad hoc fix-up because 
 # _LT_AC_TAGVAR(always_export_symbols, $1)=yes didn't work
 # FIX ME
-CXXFLAGS="`echo $CXXFLAGS | sed -e 's/-O[[0-9]]*/-O0/'`"
+# JMD_NOTE: not sure where I got this, but it's purpose id to block
+# optimization so test getting rid of it
+#CXXFLAGS="`echo $CXXFLAGS | sed -e 's/-O[[0-9]]*/-O0/'`"
 
 AC_CONFIG_FILES([Makefile
                  include/Makefile

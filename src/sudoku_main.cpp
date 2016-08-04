@@ -1,25 +1,11 @@
-/* -*- Mode: C++; fill-column: 80 -*- 
- *
- * $Id: sudoku_main.cpp,v 1.2 2008/04/25 19:05:28 mark Exp $
- *
- ***************************************************************************
- *   Copyright (C) 2008, 2016 by Mark Deric                                *
+/* -*- Mode: C++; fill-column: 80 -*- */
+/***************************************************************************
+ *   Copyright (c) 2008, 2016 Mark Deric                                   *
  *   mark@dericnet.com                                                     *
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ * This work is offered under the the terms of the MIT License; see the    *
+ * LICENSE file in the top directory of this distribution or on Github:    *
+ *   https://github.com/jmderic/sudoku_dlx                                 *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -29,12 +15,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
-#include <map>
-
 #include "sudoku_squares.h"
 
-static void output_solution(std::ostream& os,
-                            sudoku_game& game,
+static void output_solution(std::ostream& os, sudoku_game& game,
                             const std::vector<intz_t>& row_list)
 {
     square_set ordered_rows;
@@ -90,11 +73,9 @@ int main(int argc, char *argv[])
             sudoku_square sq(argv[i]);
             inserted = taken.insert(sq);
             if (!inserted.second) {
-                std::ostringstream os("Duplicate squares specified: ",
-                                      std::ios::app);
-                os << argv[i];
-                jmd::dlx::ec_exception exc(os.str());
-                throw exc;
+                std::ostringstream os;
+                os << "Duplicate squares specified: " << argv[i];
+                throw std::runtime_error(os.str());
             }            
         }
 
@@ -106,8 +87,8 @@ int main(int argc, char *argv[])
         ecm.search();
         scb.dump_summary();
     }
-    catch(jmd::dlx::ec_exception& ec) {
-        std::cerr << "Exiting on exception " << ec.what() << std::endl;
+    catch(std::exception& e) {
+        std::cerr << "Exiting on exception " << e.what() << std::endl;
     }
 
     return EXIT_SUCCESS;
