@@ -5,4 +5,4 @@
 AUTOMAKE_OPTIONS = 1.4
 
 # on the other hand, I'm sure of this
-SUBDIRS = lib src include
+SUBDIRS = src include

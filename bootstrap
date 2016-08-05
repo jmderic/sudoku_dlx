@@ -10,8 +10,8 @@ case `uname` in
 esac
 
 aclocal
-autoheader
-$LIBTOOLIZE --copy --force
+#autoheader # only needed if AC_CONFIG_HEADERS found in configure.ac
+#$LIBTOOLIZE --copy --force # not needed now that lib is header-only
 automake --add-missing --copy
 autoconf
 

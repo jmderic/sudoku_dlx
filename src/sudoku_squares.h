@@ -11,7 +11,6 @@
 #define _SUDOKU_SQUARES_H 1
 
 #include "jmdlx.h"
-#include <sstream>
 
 #if defined(COLUMN_SETUP_DEBUG) || defined(ROW_SETUP_DEBUG)
 #include <iostream>

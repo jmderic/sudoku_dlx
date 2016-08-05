@@ -1,5 +1,5 @@
-sudoku_dlx -- A Sudoku puzzle solver in C++
-===========================================
+sudoku_dlx -- C++ header-only Dancing Links exact cover library 
+===============================================================
 
 Copyright (C) 2008, 2016 Mark Deric
 
@@ -10,20 +10,20 @@ Github: https://github.com/jmderic/sudoku_dlx
 Summary
 -------
 
-Uses Knuth's DLX "Dancing Links" concept for implementing Algorithm X
-to solve the "exact cover" problem.  The DLX algorithm is installed as
-a shared library; effort was made to separate the Sudoku semantics
-from the exact cover library so the library can be re-used.
+Implements Knuth's DLX "Dancing Links" concept for with Algorithm X to
+solve the "exact cover" problem.  The DLX algorithm was originally a
+shared library; now it is a C++ header-only library wholly within
+`./include/jmdlx.h`.  A couple supporting files give the Sudoku Solver
+use case which demos the API and acts as a starter test program.
 
-Also, it's pretty short:
+The whole thing is pretty short:
 
 ```
  $ find . \( -name "*.cpp" -o -name "*.h" \) -type f | xargs wc -l
-   95 ./src/sudoku_main.cpp
-  176 ./src/sudoku_squares.h
-   91 ./lib/jmdlx.cpp
-  197 ./include/jmdlx.h
-  559 total
+   91 ./src/sudoku_main.cpp
+  175 ./src/sudoku_squares.h
+  263 ./include/jmdlx.h
+  529 total
 ```
 
 Building
@@ -34,6 +34,9 @@ on CentOS 7, Mac OSX, and ubuntu.  Building currently requires that
 the autotools be installed to generate ./configure, the Makefile.in's,
 and their supporting files.  Details are in the INSTALL file in this
 directory.
+
+Shared library version is on the so_lib branch for reference, not
+maintenance.
 
 Running
 -------

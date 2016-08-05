@@ -5,7 +5,8 @@
 # suppress error message if user has not yet typed ./configure
 make maintainer-clean 2>/dev/null
 
-BOOTSTRAPPED_FILES="aclocal.m4 config.sub COPYING ltmain.sh missing config.guess configure depcomp install-sh config.h.in autom4te.cache"
+#BOOTSTRAPPED_FILES="aclocal.m4 config.sub COPYING ltmain.sh missing config.guess configure depcomp install-sh config.h.in autom4te.cache"
+BOOTSTRAPPED_FILES="aclocal.m4 config.sub COPYING ltmain.sh missing config.guess configure depcomp install-sh config.h.in"
 for BOOTSTRAPPED_FILE in $BOOTSTRAPPED_FILES; do
     rm -rf $BOOTSTRAPPED_FILE
 done
