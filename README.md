@@ -10,11 +10,12 @@ Github: https://github.com/jmderic/sudoku_dlx
 Summary
 -------
 
-Implements Knuth's DLX "Dancing Links" concept for with Algorithm X to
+Implements Knuth's DLX "Dancing Links" concept for Algorithm X to
 solve the "exact cover" problem.  The DLX algorithm was originally a
 shared library; now it is a C++ header-only library wholly within
 `./include/jmdlx.h`.  A couple supporting files give the Sudoku Solver
-use case which demos the API and acts as a starter test program.
+use case which demonstrates the API and acts as a starter test
+program.
 
 The whole thing is pretty short:
 
@@ -25,26 +26,27 @@ The whole thing is pretty short:
   263 ./include/jmdlx.h
   529 total
 ```
+I like to write code a lot; but I don't like to write a lot of code!
 
 Building
 --------
 
 This project builds using the GNU autotools suite.  It has been tested
-on CentOS 7, Mac OSX, and ubuntu.  Building currently requires that
-the autotools be installed to generate ./configure, the Makefile.in's,
-and their supporting files.  Details are in the INSTALL file in this
-directory.
+on CentOS 7, Mac OSX El Capitan, and Ubuntu 14.04.  Building currently
+requires that the autotools be installed to generate ./configure, the
+Makefile.in's, and their supporting files.  Details are in the INSTALL
+file in this directory.
 
-Shared library version is on the so_lib branch for reference, not
-maintenance.
+The shared library version is maintained on the so_lib branch for
+reference.
 
 Running
 -------
 
-If you did a `make install`, the program name is `sudoku_dlx`, probably
-installed in `/usr/local/bin` and in your PATH.  If you want to run
-the program in place where you built it, use the script in the src
-directory by typing `./src/sudoku_dlx` as the program name.
+If you did a `make install`, the program name is `sudoku_dlx`,
+probably installed in `/usr/local/bin` and in your PATH.  If you want
+to run the program in place where you built it, use the executable in
+the src directory by typing `./src/sudoku_dlx` from this directory.
 
 After the program name, Enter each of the known squares as a 3 digit
 argument representing number, row, and column.  For example, 312 says
@@ -117,13 +119,9 @@ $
 Debugging and Misc
 ------------------
 
-to debug in place w/o installing:
-
-`libtool --mode=execute gdb sudoku_dlx`
-
 convenient find exec grep:
 
-`find . -name ".git" -prune -o -type f \( -name "*.cpp" -o -name "*.h" \) -exec grep -E -nH -e "to_find" {} +`
+`find . -name ".git" -prune -o -type f \( -name "*.cpp" -o -name "*.h" \) -exec grep -E -nH -e "what_to_find" {} +`
 
 Feedback and Patches
 --------------------

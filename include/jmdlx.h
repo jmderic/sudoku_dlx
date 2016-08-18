@@ -29,12 +29,13 @@ typedef long int intz_t;
 
 JMD_DLX_NAMESPACE_BEGIN
 
-// represents a 1 in a matrix row -- hdr_ptr points to the column header and
-// rc_idx is the row number
-// alternatively, represents a column header -- hdr_ptr is NULL and rc_idx is
-// the column number
+// a matrix_one instance represents a 1 in a matrix row -- hdr_ptr points to the
+// column header and rc_idx is the row number
+// secondarily but importantly, represents a column header -- hdr_ptr is NULL
+// and rc_idx is the column number
 class matrix_one
 {
+    // ctor for the column header root (to the left of all the column headers)
     matrix_one() : left(this), right(this), up(this), down(this),
                    hdr_ptr(this), rc_idx(-1) {}
     // inserting constructor: creates and inserts at the specified location
