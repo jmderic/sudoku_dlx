@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.1.1.1 2008/04/09 20:40:19 mark Exp $
 
 bin_PROGRAMS = sudoku_dlx
 sudoku_dlx_SOURCES = sudoku_main.cpp sudoku_squares.h
