@@ -1,0 +1,53 @@
+emacs build line with detail:
+make -k VERBOSE=1
+
+Default production build:
+BUILD_DIR=sudoku_dlx_build_`date '+%Y%m%d_%H%M%S'`; cd ..; mkdir $BUILD_DIR; cd $BUILD_DIR; cmake ../sudoku_dlx
+
+Debug build:
+BUILD_DIR=sudoku_dlx_build_`date '+%Y%m%d_%H%M%S'`; cd ..; mkdir $BUILD_DIR; cd $BUILD_DIR; cmake -DCMAKE_BUILD_TYPE=Debug ../sudoku_dlx
+
+Note on ASAN:
+
+There is now an asan_support.hpp header which conditionally defines
+ATTRIBUTE_NO_SANITIZE_ADDRESS.
+
+Used in other projects, not this one, yet.
+
+This was used in CodeDup_Filter.hpp but, with this commit, the use was
+expunged.  But replaced with a use in CodeDup_FileLine.cpp.
+
+The resulting thinking is that asan_support.hpp should only be used in
+compilation units, not headers.
+
+Jury still out, but this seem to be a best practice.
+
+Change to separate ASAN from LSAN w/cmake (all invoke with -DCMAKE_BUILD_TYPE=Debug):
+Build with AdddressSanitizer only:
+BUILD_DIR=sudoku_dlx_build_`date '+%Y%m%d_%H%M%S'`; cd ..; mkdir $BUILD_DIR; cd $BUILD_DIR; cmake -DASAN_ENABLED=ON ../sudoku_dlx
+Build with LeakSanitizer only:
+BUILD_DIR=sudoku_dlx_build_`date '+%Y%m%d_%H%M%S'`; cd ..; mkdir $BUILD_DIR; cd $BUILD_DIR; cmake -DLSAN_ENABLED=ON ../sudoku_dlx
+Both ENABLED flags for both:
+BUILD_DIR=sudoku_dlx_build_`date '+%Y%m%d_%H%M%S'`; cd ..; mkdir $BUILD_DIR; cd $BUILD_DIR; cmake -DASAN_ENABLED=ON -DLSAN_ENABLED=ON ../sudoku_dlx
+
+cleanup notes:
+trailing whitespace
+(query-replace-regexp "  *$" "" nil (if (use-region-p) (region-beginning)) (if (use-region-p) (region-end)) nil nil)
+
+==========
+
+Saw this for building in the source tree per
+git@gitlab.com:eidheim/Simple-Web-Server.git
+
+cmake -H. -Bbuild
+cmake --build build
+
+Apparently per
+https://stackoverflow.com/questions/31090821/what-does-the-h-option-means-for-cmake
+
+The Hitchhiker's Guide to the CMake explains both, the legacy and new in CMake 3.13 options:
+-H
+This internal option is not documented but widely used by community.
+
+==========
+

@@ -1,0 +1,29 @@
+[mark@SkullNUC37 city_skyline_build_20210303_171313]$ ./CitySkyline
+city >> addBldg 5 15 7
+addBldg [x1, x2, y] = [5, 15, 7]
+city >> addBldg 2 8 4
+addBldg [x1, x2, y] = [2, 8, 4]
+city >> addBldg 7 10 12
+addBldg [x1, x2, y] = [7, 10, 12]
+city >> addBldg 8 12 9
+addBldg [x1, x2, y] = [8, 12, 9]
+city >> getSkyline
+getSkyline
+[2, 4], [5, 7], [7, 12], [10, 9], [12, 7], [15, 0]
+city >> quit
+done
+[mark@SkullNUC37 city_skyline_build_20210303_171313]$ ./test/CityTest 
+Running main() from /home/mark/development/city_skyline_project/city_skyline_build_20210303_171313/test/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from CityTest
+[ RUN      ] CityTest.BasicFunction
+[       OK ] CityTest.BasicFunction (0 ms)
+[ RUN      ] CityTest.SameBldgTwice
+[       OK ] CityTest.SameBldgTwice (0 ms)
+[----------] 2 tests from CityTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 2 tests.
+[mark@SkullNUC37 city_skyline_build_20210303_171313]$ 
