@@ -1,5 +1,5 @@
-#ifndef SUDOKU_DLX_CONFIG_HPP__
-#define SUDOKU_DLX_CONFIG_HPP__
+#ifndef SUDOKU_DLX_CONFIG_H__
+#define SUDOKU_DLX_CONFIG_H__
 
 // the configured options and settings for CitySkyline
 #define sudoku_dlx_MAJOR_VERSION @sudoku_dlx_MAJOR_VERSION@
@@ -9,4 +9,4 @@
 
 #cmakedefine ASAN_ENABLED
 
-#endif // SUDOKU_DLX_CONFIG_HPP__
+#endif // SUDOKU_DLX_CONFIG_H__

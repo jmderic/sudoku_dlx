@@ -22,12 +22,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
-  "${PROJECT_SOURCE_DIR}/sudoku_dlx_config.hpp.in"
-  "${PROJECT_BINARY_DIR}/sudoku_dlx_config.hpp"
+  "${PROJECT_SOURCE_DIR}/sudoku_dlx_config.h.in"
+  "${PROJECT_BINARY_DIR}/sudoku_dlx_config.h"
   )
  
 # add the binary tree to the search path for include files
-# so that we will find sudoku_dlx_config.hpp
+# so that we will find sudoku_dlx_config.h
 include_directories(
   "${PROJECT_BINARY_DIR}"
   )
