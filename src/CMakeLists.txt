@@ -13,5 +13,5 @@ target_compile_options(sudoku_dlx PRIVATE -Werror -Wall -Wextra)
 
 target_include_directories(sudoku_dlx PRIVATE
   .
-  ../include"
+  ../include
   )

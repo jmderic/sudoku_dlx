@@ -30,8 +30,8 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(sudoku_dlx_test sudoku_dlx_test.cpp)
-target_compile_options(sudoku_dlx PRIVATE -Werror -Wall -Wextra)
-target_include_directories(sudoku_dlx PRIVATE
+target_compile_options(sudoku_dlx_test PRIVATE -Werror -Wall -Wextra)
+target_include_directories(sudoku_dlx_test PRIVATE
   ../src
   ../include
   )
