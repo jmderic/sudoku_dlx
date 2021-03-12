@@ -55,7 +55,7 @@ protected:
 };
 
 
-class sudoku_dlx_test : public ::testing::Test {
+class SudokuDlxTest : public ::testing::Test {
  protected:
     using Args = std::vector<std::string>;
     void RunCase(const Args& args, const std::string& expected) {
@@ -89,13 +89,13 @@ class sudoku_dlx_test : public ::testing::Test {
     }
 };
 
-TEST_F(sudoku_dlx_test, Headline) {
+TEST_F(SudokuDlxTest, Headline) {
     Args args{"312","914","715","822","626","528","136","142","543","747","649","351","752","858","559","961","663","167","268","474","282","784","688","895","996","798"};  // NOLINT
     const std::string expected{"r1c1-5,r1c3-4,r1c6-8,r1c7-6,r1c8-1,r1c9-2,r2c1-1,r2c3-9,r2c4-3,r2c5-2,r2c7-4,r2c9-7,r3c1-2,r3c2-6,r3c3-7,r3c4-5,r3c5-4,r3c7-3,r3c8-9,r3c9-8,r4c1-8,r4c4-2,r4c5-9,r4c6-3,r4c8-4,r5c3-2,r5c4-6,r5c5-1,r5c6-4,r5c7-9,r6c2-4,r6c4-8,r6c5-5,r6c6-7,r6c9-3,r7c1-7,r7c2-9,r7c3-8,r7c5-6,r7c6-2,r7c7-5,r7c8-3,r7c9-1,r8c1-4,r8c3-1,r8c5-3,r8c6-5,r8c7-8,r8c9-9,r9c1-6,r9c2-5,r9c3-3,r9c4-1,r9c7-2,r9c9-4"};  // NOLINT
     RunCase(args, expected);
 }
 
-TEST_F(sudoku_dlx_test, DupInput) {
+TEST_F(SudokuDlxTest, DupInput) {
     Args args{"312","312"};  // NOLINT
     const std::string expected{"Duplicate squares specified: 312"};  // NOLINT
     RunCase(args, expected);
@@ -103,7 +103,7 @@ TEST_F(sudoku_dlx_test, DupInput) {
 
 // Hardest found here: 
 // https://sudokuprintables.com/worlds-hardest-sudoku-printable
-TEST_F(sudoku_dlx_test, Hardest) {
+TEST_F(SudokuDlxTest, Hardest) {
     Args args{"811","323","624","732","935","237","542","746","455","556","757","164","368","173","678","879","883","584","188","992","497"};  // NOLINT
     const std::string expected{"r1c2-1,r1c3-2,r1c4-7,r1c5-5,r1c6-3,r1c7-6,r1c8-4,r1c9-9,r2c1-9,r2c2-4,r2c5-8,r2c6-2,r2c7-1,r2c8-7,r2c9-5,r3c1-6,r3c3-5,r3c4-4,r3c6-1,r3c8-8,r3c9-3,r4c1-1,r4c3-4,r4c4-2,r4c5-3,r4c7-8,r4c8-9,r4c9-6,r5c1-3,r5c2-6,r5c3-9,r5c4-8,r5c8-2,r5c9-1,r6c1-2,r6c2-8,r6c3-7,r6c5-6,r6c6-9,r6c7-5,r6c9-4,r7c1-5,r7c2-2,r7c4-9,r7c5-7,r7c6-4,r7c7-3,r8c1-4,r8c2-3,r8c5-2,r8c6-6,r8c7-9,r8c9-7,r9c1-7,r9c3-6,r9c4-3,r9c5-1,r9c6-8,r9c8-5,r9c9-2"};  // NOLINT
     RunCase(args, expected);

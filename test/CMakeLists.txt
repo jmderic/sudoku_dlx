@@ -29,11 +29,11 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  EXCLUDE_FROM_ALL)
 
 # Now simply link against gtest or gtest_main as needed. Eg
-add_executable(sudoku_dlx_test sudoku_dlx_test.cpp)
-target_compile_options(sudoku_dlx_test PRIVATE -Werror -Wall -Wextra)
-target_include_directories(sudoku_dlx_test PRIVATE
+add_executable(SudokuDlxTest SudokuDlxTest.cpp)
+target_compile_options(SudokuDlxTest PRIVATE -Werror -Wall -Wextra)
+target_include_directories(SudokuDlxTest PRIVATE
   ../src
   ../include
   )
-target_link_libraries(sudoku_dlx_test gtest_main)
-add_test(NAME sudoku_dlx_test COMMAND sudoku_dlx_test)
+target_link_libraries(SudokuDlxTest gtest_main)
+add_test(NAME SudokuDlxTest COMMAND SudokuDlxTest)
