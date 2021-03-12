@@ -1,0 +1,31 @@
+# backup files
+*~
+
+# developer cruft
+*.log
+*.grep
+*.diff
+*_devel*
+TAGS
+
+# autotools and other built files anywhere in the tree
+.deps/
+.libs/
+Makefile
+Makefile.in
+*.o
+*.lo
+*.la
+
+# autotools and other built files in $TOP
+/config.*
+/aclocal.m4
+/autom4te.cache/
+/configure
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/missing
+/src/sudoku_dlx
+/stamp-h1

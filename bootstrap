@@ -1,0 +1,24 @@
+#!/bin/sh -e
+# the list of commands that need to run before we do ./configure
+
+LIBTOOLIZE=no_libtoolize
+case `uname` in
+    Darwin)
+	LIBTOOLIZE=glibtoolize ;;
+    Linux)
+	LIBTOOLIZE=libtoolize  ;;
+esac
+
+aclocal
+#autoheader # only needed if AC_CONFIG_HEADERS found in configure.ac
+#$LIBTOOLIZE --copy --force # not needed now that lib is header-only
+automake --add-missing --copy
+autoconf
+
+USER_DIST=${1:-no_dist}
+if test $USER_DIST == dist; then
+    echo "Doing cleanup for ./configure distribution"
+    rm -rf autom4te.cache
+fi
+
+# next: ./configure --enable-maintainer-mode
