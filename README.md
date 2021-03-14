@@ -1,7 +1,7 @@
 sudoku_dlx -- C++ header-only Dancing Links exact cover library 
 ===============================================================
 
-Copyright (C) 2008, 2016 Mark Deric
+© 2008, 2016, 2021 Mark Deric
 
 This work is offered under the the terms of the MIT License; see the
 LICENSE file in the top directory of this source distribution or on
@@ -10,42 +10,44 @@ Github: https://github.com/jmderic/sudoku_dlx
 Summary
 -------
 
-Implements Knuth's DLX "Dancing Links" concept for Algorithm X to
-solve the "exact cover" problem.  The DLX algorithm was originally a
-shared library; now it is a C++ header-only library wholly within
-`./include/jmdlx.h`.  A couple supporting files give the Sudoku Solver
-use case which demonstrates the API and acts as a starter test
-program.
+Implements Knuth's
+["Dancing Links" Algorithm X](https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/0011047.pdf)
+to solve the "exact cover" problem.  This DLX algorithm was originally
+implemented here as a shared library; the shared library version is
+tagged as `shared_lib`.  Now it is a C++ header-only library wholly
+within `./include/jmdlx.h`.  A couple supporting files give the Sudoku
+Solver use case which demonstrates the DLX API.  Unit tests are
+implemented in the `test` directory.
 
-The whole thing is pretty short:
+The whole thing is pretty short. I like to write code a lot; but I
+don't like to write a lot of code!
 
 ```
  $ find . \( -name "*.cpp" -o -name "*.h" \) -type f | xargs wc -l
-   91 ./src/sudoku_main.cpp
+  110 ./test/SudokuDlxTest.cpp
   175 ./src/sudoku_squares.h
-  263 ./include/jmdlx.h
-  529 total
+   91 ./src/sudoku_main.cpp
+  258 ./include/jmdlx.h
+  634 total
 ```
-I like to write code a lot; but I don't like to write a lot of code!
 
-Building
---------
+These sizes are likely to change as I'm currently working to update
+this code to the C++17 standard as well as to improve it with what
+I've learned since the earlier work.
 
-This project builds using the GNU autotools suite.  It has been tested
-on CentOS 7, Mac OSX El Capitan, and Ubuntu 14.04.  Building currently
-requires that the autotools be installed to generate ./configure, the
-Makefile.in's, and their supporting files.  Details are in the INSTALL
-file in this directory.
+Building and Testing
+--------------------
 
-The shared library version is maintained on the so_lib branch for
-reference.
+This project builds using `cmake`, recently changed from GNU
+autotools.  For more information on building for production, debug,
+and building with ASAN and LSAN see
+[Building and Testing](BUILDnTEST.md).  This also includes information
+on running the unit tests.
 
-Running
--------
+Running the Product
+-------------------
 
-If you did a `make install`, the program name is `sudoku_dlx`,
-probably installed in `/usr/local/bin` and in your PATH.  If you want
-to run the program in place where you built it, use the executable in
+To run the program in place where you built it, use the executable in
 the src directory by typing `./src/sudoku_dlx` from this directory.
 
 After the program name, Enter each of the known squares as a 3 digit
@@ -115,16 +117,3 @@ r9c9-4
 Number of solutions: 1
 $
 ```
-
-Debugging and Misc
-------------------
-
-convenient find exec grep:
-
-`find . -name ".git" -prune -o -type f \( -name "*.cpp" -o -name "*.h" \) -exec grep -E -nH -e "what_to_find" {} +`
-
-Feedback and Patches
---------------------
-
-You are welcome to contact me with feedback and patches at the email
-address in the source files.
