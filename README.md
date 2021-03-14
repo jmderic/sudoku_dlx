@@ -47,8 +47,10 @@ on running the unit tests.
 Running the Product
 -------------------
 
-To run the program in place where you built it, use the executable in
-the src directory by typing `./src/sudoku_dlx` from this directory.
+To run the program in place
+[where you built it](https://github.com/jmderic/sudoku_dlx/blob/cmake/BUILDnTEST.md#running-product-tests),
+use the executable in the src directory by typing `./src/sudoku_dlx`
+while in this directory.
 
 After the program name, Enter each of the known squares as a 3 digit
 argument representing number, row, and column.  For example, 312 says
@@ -117,3 +119,7 @@ r9c9-4
 Number of solutions: 1
 $
 ```
+
+The results show the row, column, and value of the remaining squares
+to be filled in.  If there are multiple solutions, the first 10 will
+be shown.
