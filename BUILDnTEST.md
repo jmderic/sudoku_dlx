@@ -33,7 +33,7 @@ This creates the new cmake build directory, cd's into it, and runs cmake on the 
  [sudoku_dlx_build_20210312_155145]$ make -k VERBOSE=1
 ```
 
-You can run the `make` command without arguments for simpler output.  The above `-k` tells make to "keep going" if it can on error.  The `VERBOSE=1` showe the details of the commands it is executing, e.g., the compile and link commands.
+You can run the `make` command without arguments for simpler output.  The above `-k` tells make to "keep going" if it can on error.  The `VERBOSE=1` shows the details of the commands it is executing, e.g., the compile and link commands.
 
 Build Variations
 ----------------
